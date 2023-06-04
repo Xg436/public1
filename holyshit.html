@@ -5,7 +5,7 @@
         <style>
             body {
                 font-family: Arial, sans-serif;
-                max-width: 1200px; 
+                max-width: 1200px;
                 margin: 0 auto;
             }
 
@@ -55,15 +55,19 @@
             .checkbox-container {
                 margin-bottom: 10px;
             }
+
             .dropdown-container {
                 display: flex;
                 align-items: center;
+                flex-direction: column;
             }
+
             .dropdown-container select {
-                max-width: 100px; 
-				padding-left:0px;
-				padding-right:0px;
+                max-width: 100px;
+                padding-left: 0px;
+                padding-right: 0px;
             }
+
             .dropdown-container label {
                 margin-right: 10px;
             }
@@ -72,7 +76,7 @@
     <script>
         var 暴击率 = 0
           , 暴击伤害 = 1
-          , 元素充能效率 = 2
+          , 充能效率 = 2
           , 攻击力 = 3
           , 生命值 = 4
           , 防御力 = 5
@@ -96,19 +100,19 @@
         var 杯 = 3;
         var 头 = 4;
 
-        var AttrDesc = ["暴击率", "暴击伤害", "元素充能效率", "攻击力", "生命值", "防御力", "元素精通", "小攻击", "小生命", "小防御", "水伤加成", "火伤加成", "冰伤加成", "雷伤加成", "风伤加成", "岩伤加成", "草伤加成", "物伤加成", "治疗加成"];
+        var AttrDesc = ["暴击率", "暴击伤害", "充能效率", "攻击力", "生命值", "防御力", "元素精通", "小攻击", "小生命", "小防御", "水伤加成", "火伤加成", "冰伤加成", "雷伤加成", "风伤加成", "岩伤加成", "草伤加成", "物伤加成", "治疗加成"];
 
         var PartDesc = ["花", "羽", "沙", "杯", "头"];
 
         var 副词条最大值 = [3.89, 7.77, 6.48, 5.83, 5.83, 7.29, 23.31, 19.45, 298.75, 23.15];
 
-        var 副词条概率 = [[暴击率, 0.0682], [暴击伤害, 0.0682], [元素充能效率, 0.0909], [攻击力, 0.0909], [生命值, 0.0909], [防御力, 0.0909], [元素精通, 0.0909], [小攻击, 0.1364], [小生命, 0.1364], [小防御, 0.1364]];
+        var 副词条概率 = [[暴击率, 0.0682], [暴击伤害, 0.0682], [充能效率, 0.0909], [攻击力, 0.0909], [生命值, 0.0909], [防御力, 0.0909], [元素精通, 0.0909], [小攻击, 0.1364], [小生命, 0.1364], [小防御, 0.1364]];
 
         var 花主词条 = [[小生命, 1]];
 
         var 羽主词条 = [[小攻击, 1]];
 
-        var 沙主词条 = [[生命值, 0.2668], [攻击力, 0.2668], [防御力, 0.2668], [元素充能效率, 0.1], [元素精通, 0.1]];
+        var 沙主词条 = [[生命值, 0.2668], [攻击力, 0.2668], [防御力, 0.2668], [充能效率, 0.1], [元素精通, 0.1]];
 
         var 杯主词条 = [[生命值, 0.2125], [攻击力, 0.2125], [防御力, 0.2125], [元素精通, 0.025], [水伤加成, 0.05], [火伤加成, 0.05], [冰伤加成, 0.05], [雷伤加成, 0.05], [风伤加成, 0.05], [岩伤加成, 0.05], [草伤加成, 0.05], [物伤加成, 0.05], [治疗加成, 0.05]];
 
@@ -158,11 +162,15 @@
         HolyShit.prototype.toString = function() {
             var text = PartDesc[this.part] + ":" + AttrDesc[this.attr];
             for (var i = 0; i < 4; i++) {
+                if (this.subAttr[i] <= 暴击伤害)
+                    text += " <span style=\"color:red;\">";
                 text += "<br>" + AttrDesc[this.subAttr[i]] + ":";
                 if (this.subAttr[i] <= 防御力)
                     text += this.subValue[i].toFixed(1) + "%";
                 else
                     text += this.subValue[i].toFixed(0);
+                if (this.subAttr[i] <= 暴击伤害)
+                    text += " </span>";
             }
             return text;
         }
@@ -278,7 +286,7 @@
             result.innerHTML = "只刷需要" + count / (day / 2).toFixed(0) + "天";
             result.innerHTML += "，只三合一需要" + count / (day / 2).toFixed(0) + "天";
             result.innerHTML += "，刷且三合一需要" + count / (day).toFixed(0) + "天";
-            result.innerHTML += "<br /><br />最后一个圣遗物属性为：<br />" + HSList[10].toString();
+            result.innerHTML += "<br /><br />最后一个圣遗物属性为：<br/>" + HSList[10].toString();
         }
     </script>
     <body>
@@ -286,7 +294,9 @@
         <table id="myTable">
             <tr>
                 <td class="dropdown-container">
-                    <label for="dropdown1">花</label>
+                    <label for="dropdown1">
+                        花<br/>
+                    </label>
                     <select id="dropdown1"></select>
                 </td>
                 <td>数据1</td>
@@ -294,7 +304,9 @@
             </tr>
             <tr>
                 <td class="dropdown-container">
-                    <label for="dropdown2">羽</label>
+                    <label for="dropdown2">
+                        羽<br/>
+                    </label>
                     <select id="dropdown2"></select>
                 </td>
                 <td>数据2</td>
@@ -303,6 +315,7 @@
             <tr>
                 <td class="dropdown-container">
                     <label for="dropdown3">沙</label>
+                    <br/>
                     <select id="dropdown3"></select>
                 </td>
                 <td>数据3</td>
@@ -310,7 +323,9 @@
             </tr>
             <tr>
                 <td class="dropdown-container">
-                    <label for="dropdown4">杯</label>
+                    <label for="dropdown4">
+                        杯<br/>
+                    </label>
                     <select id="dropdown4"></select>
                 </td>
                 <td>数据4</td>
@@ -318,7 +333,9 @@
             </tr>
             <tr>
                 <td class="dropdown-container">
-                    <label for="dropdown5">头</label>
+                    <label for="dropdown5">
+                        头<br/>
+                    </label>
                     <select id="dropdown5"></select>
                 </td>
                 <td>数据5</td>
