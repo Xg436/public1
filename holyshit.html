@@ -5,7 +5,7 @@
         <style>
             body {
                 font-family: Arial, sans-serif;
-                max-width: 1000px;
+                max-width: 1200px; 
                 margin: 0 auto;
             }
 
@@ -55,12 +55,15 @@
             .checkbox-container {
                 margin-bottom: 10px;
             }
-
             .dropdown-container {
                 display: flex;
                 align-items: center;
             }
-
+            .dropdown-container select {
+                max-width: 100px; 
+				padding-left:0px;
+				padding-right:0px;
+            }
             .dropdown-container label {
                 margin-right: 10px;
             }
@@ -273,9 +276,9 @@
             var day = 1.068 * 9;
             var result = document.getElementById("result");
             result.innerHTML = "只刷需要" + count / (day / 2).toFixed(0) + "天";
-            result.innerHTML += "只三合一需要" + count / (day / 2).toFixed(0) + "天";
-            result.innerHTML += "刷且三合一需要" + count / (day).toFixed(0) + "天";
-            result.innerHTML += "<br />" + HSList[10].toString();
+            result.innerHTML += "，只三合一需要" + count / (day / 2).toFixed(0) + "天";
+            result.innerHTML += "，刷且三合一需要" + count / (day).toFixed(0) + "天";
+            result.innerHTML += "<br /><br />最后一个圣遗物属性为：<br />" + HSList[10].toString();
         }
     </script>
     <body>
