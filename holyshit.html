@@ -42,8 +42,8 @@
             }
 
             button,input {
-                font-size: 20px;
-                margin: 15px;
+                font-size: 30px;
+                margin: 5px;
             }
 
             label {
@@ -256,6 +256,8 @@
             var dropdowns = document.querySelectorAll("select");
             for (var i = 0; i < 5; i++) {
                 selectAttr[i] = dropdowns[i].value;
+                table.rows[i].cells[1].innerHTML = " <br/> <br/> <br/> <br/> <br/> ";
+                table.rows[i].cells[2].innerHTML = " <br/> <br/> <br/> <br/> <br/> ";
             }
             var checkboxes = document.querySelectorAll("#checkboxContainer input[type='checkbox']");
             validAttr = [];
