@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>词条收益计算器</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            height: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+            font-size: 14px;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 0;
+            text-align: center;
+            height: 50px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            border: none;
+            box-sizing: border-box;
+        }
+
+        canvas {
+            width: 100% !important;  /* 让图表宽度自适应 */
+            height: 100%;  /* 高度占据剩余空间 */
+        }
+
+        .chart-container {
+            flex-grow: 1;  /* 使得图表容器占据剩余空间 */
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>当前人物面板</h2>
+
+    <table>
+        <tr>
+            <td>攻击力</td>
+            <td><input type="number" name="num1" min="0" value="3000"></td>
+            <td>攻击白值</td>
+            <td><input type="number" name="num2" min="0" value="1000"></td>
+        </tr>
+        <tr>
+            <td>暴击率</td>
+            <td><input type="number" name="num3" min="0" value="70"></td>
+            <td>暴击伤害</td>
+            <td><input type="number" name="num4" min="0" value="200"></td>
+        </tr>
+        <tr>
+            <td>伤害加成</td>
+            <td><input type="number" name="num5" min="0" value="46"></td>
+            <td>元素精通</td>
+            <td><input type="number" name="num6" min="0" value="80"></td>
+        </tr>
+        <tr>
+            <td>增幅系数</td>
+            <td><input type="number" name="num7" min="0" value="1.5"></td>
+            <td>反应率</td>
+            <td><input type="number" name="num8" min="0" value="0.8"></td>
+        </tr>
+    </table>
+	<p> 反应率为未增幅反应造成的伤害中，有多少伤害可以进行增幅反应加成</p>
+	<p> 对于生命C也可以在攻击栏中填入生命值和生命白值来计算词条收益</p>
+    <div class="chart-container">
+        <h2>词条收益</h2>
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <script>
+        function getTooltipInfo(tooltipItem) {
+            // 获取当前 tooltip 对应的横坐标（索引）
+            var index = tooltipItem.dataIndex;
+
+            // 获取所有数据集中该索引对应的数据点
+            var allDataPoints = tooltipItem.chart.data.datasets.map(function (dataset, i) {
+                return {
+                    label: dataset.label,
+                    value: dataset.data[index],
+                    color: dataset.borderColor
+                };
+            });
+
+            // 按值从大到小排序
+            allDataPoints.sort(function (a, b) {
+                return b.value - a.value;
+            });
+            return allDataPoints[tooltipItem.datasetIndex];
+        }
+
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'line',  // 折线图
+            data: {
+                labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'], // 横轴的标签
+                datasets: [] // 初始数据集为空
+            },
+            options: {
+                responsive: true,  // 让图表响应式
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                size: 14 // 设置Y轴字体大小
+                            }
+                        }
+                    },
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            usePointStyle: true,  // 使用点样式而非默认矩形框
+                            pointStyle: 'rect', // 设置图例为实心圆
+                            font: {
+                                size: 14 // 设置图例字体大小
+                            },
+                            color: '#000' // 设置图例字体颜色
+                        }
+                    },
+                    tooltip: {
+                        enabled: true,
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                var item = getTooltipInfo(tooltipItem);
+                                return item.label + ': ' + item.value + '%';
+                            },
+                            labelColor: function(tooltipItem) {
+                                var item = getTooltipInfo(tooltipItem);
+                                return {
+                                    borderColor: item.color, // 设置边框颜色
+                                    backgroundColor: item.color // 设置背景颜色
+                                };
+                            }
+                        },
+                        bodyFont: {
+                            size: 14 // 设置tooltip内容字体大小
+                        }
+                    }
+                },
+                elements: {
+                    point: {
+                        radius: 5,  // 图表中点的大小
+                        backgroundColor: function(context) {
+                            return context.dataset.borderColor; // 点颜色与线颜色保持一致
+                        },
+                        hoverRadius: 7  // 鼠标悬停时的点大小
+                    }
+                },
+        animation: {
+            duration: 0  // 设置动画持续时间为0，取消动画效果
+        }
+                
+            }
+        });
+
+        // 更新图表的函数
+        function UpdateChart() {
+            // 获取所有输入框的值
+            var gj = parseFloat(document.querySelector('input[name="num1"]').value);
+            var bz = parseFloat(document.querySelector('input[name="num2"]').value);
+            var bj = parseFloat(document.querySelector('input[name="num3"]').value);
+            var bs = parseFloat(document.querySelector('input[name="num4"]').value);
+            var zs = parseFloat(document.querySelector('input[name="num5"]').value);
+            var jt = parseFloat(document.querySelector('input[name="num6"]').value);
+            var zf = parseFloat(document.querySelector('input[name="num7"]').value);
+            var fy = parseFloat(document.querySelector('input[name="num8"]').value);
+            
+            var res = [];
+            for (var i = 0; i < 5; i++) {
+                res.push([]);
+                var ct = [0, 0, 0, 0, 0]; 
+                for (var j = 0; j < 11; j++) {
+                    var bj1 = bj + 3.3 * ct[1];
+                    if (bj1 > 100)
+                        bj1 = 100;
+                    var jt1 = jt + 20 * ct[4];
+                    var jt2 = 2.78 * jt1 / (1400 + jt1);
+                    var jt3 = zf * (1 + jt2) * fy + 1 - fy;
+                    var sh = (gj + 0.05 * bz * ct[0]) * (1 + bj1 * (bs + 6.6 * ct[2]) / 10000) * (1 + zs / 100 + 0.05 * ct[3]) * jt3;
+                    res[i].push(sh);
+                    ct[i]++;
+                }
+                var temp = res[i];
+                for (var j = 0; j < 10; j++) 
+                    temp[j] = ((temp[j+1] / temp[j] - 1)*100).toFixed(2);
+                temp.pop();
+                res[i] = temp;
+            }
+
+            // 扩展图表的数据集，设置为10个数据集
+            myChart.data.datasets = []; // 清空现有数据集    
+            var labels = ['攻击力', '暴击率', '暴击伤害', '伤害加成', '元素精通'];
+            var colors = ['#00FF00', '#FFD500', '#FF0000', '#0000FF', '#F000F0'];
+            for (var i = 0; i < 5; i++) {
+                myChart.data.datasets.push({
+                    label: labels[i],
+                    data: res[i],
+                    borderColor: colors[i], 
+                    backgroundColor: colors[i],
+                    fill: false,
+                    tension: 0.1
+                });
+            }
+
+            // 更新图表
+            myChart.update();
+        }
+
+        // 调用UpdateChart初始化图表
+        UpdateChart();
+
+        // 为每个输入框添加事件监听
+        document.querySelectorAll('input[type="number"]').forEach(function(input) {
+            input.addEventListener('input', UpdateChart);
+        });
+    </script>
+
+</body>
+</html>
