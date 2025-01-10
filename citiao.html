@@ -23,12 +23,14 @@
             justify-content: flex-start;
             height: 100%;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
             table-layout: auto;
             font-size: 14px;
+        }        
+		p {
+            font-size: 12px;
         }
 
         table, th, td {
@@ -54,10 +56,7 @@
             height: 100%;  /* 高度占据剩余空间 */
         }
         .chart-container {
-            padding-top: 20px;
-            height: 50%;
-            display: flex;
-            flex-direction: column;
+			height:40%;
         }
     </style>
 </head>
@@ -91,13 +90,14 @@
             <td><input type="number" name="num8" min="0" value="0.8"></td>
         </tr>
     </table>
+
 	<p> 反应率为未增幅反应造成的伤害中，有多少伤害可以进行增幅反应加成</p>
 	<p> 对于生命C也可以在攻击栏中填入生命值和生命白值来计算词条收益</p>
+	<p>计算特定属性10个词条的收益带来实际提升的曲线</p>
     <div class="chart-container">
-        <h2>词条收益</h2>
+        <h2>词条收益曲线</h2>
         <canvas id="myChart"></canvas>
     </div>
-
     <script>
         function getTooltipInfo(tooltipItem) {
             // 获取当前 tooltip 对应的横坐标（索引）
