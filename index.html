@@ -67,7 +67,7 @@
 
             #result2 {
                 margin-top: 20px;
-                font-size: 10px;
+                font-size: 20px;
                 color: #333333;
             }
         </style>
@@ -76,7 +76,7 @@
         <div class="container">
             <h1>抽卡概率计算器</h1>
             <form>
-                <label for="num">输入抽数:</label>
+                <label for="num">输入抽数（不能被平均抽数整除的话会去掉余数）:</label>
                 <input type="number" id="num" name="num" placeholder="请输入抽数" min="1" max="10000" required>
                 <label for="avg">输入每个up的平均抽数:</label>
                 <input type="number" id="avg" name="avg" placeholder="输入每个up的平均抽数" min="1" max="180" required>
@@ -84,9 +84,9 @@
             </form>
             <div>
                 <p/>
-                <span id="result1">非酋度：模拟同样次数的抽卡，计算你的up平均比多少人更多</span>
+                <span id="result1"></span>
                 <p/>
-                <span id="result2">非酋指数：up数量*ln((1-非酋率)/非酋率)，因为低抽数时即使非酋率很高，但脱非入欧也很快</span>
+                <span id="result2">非酋度：模拟同样次数的抽卡，计算你的up平均比多少人更多</span>
             </div>
         </div>
         <script>
@@ -113,7 +113,7 @@
                 num = document.getElementById('num').value;
                 avg = document.getElementById('avg').value;
                 num = Math.floor(num / avg) * avg;
-                manCount = 1000000 / num;
+                manCount = 10000000 / num;
                 let allData = [];
                 let avgs = [];
                 while (manCount-- > 0) {
@@ -140,7 +140,6 @@
                     f1 = 0.999;
                 if (f1 == 0)
                     f1 = 0.001;
-                res1.innerHTML += "<p />你的非酋指数:" + (num / avg * Math.log(f1 / (1 - f1)) / Math.log(Math.E)).toFixed(3);
                 let res2 = document.getElementById("result2");
                 res = "展示所有抽卡结果<p />";
                 allData.forEach((item)=>{
