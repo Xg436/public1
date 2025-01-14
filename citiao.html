@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -66,7 +68,7 @@
 
     <table>
         <tr>
-            <td>攻击力</td>
+            <td>总攻击力</td>
             <td><input type="number" name="num1" min="0" value="3000"></td>
             <td>攻击白值</td>
             <td><input type="number" name="num2" min="0" value="1000"></td>
@@ -91,9 +93,17 @@
         </tr>
     </table>
 
-	<p> 反应率为未增幅反应造成的伤害中，有多少伤害可以进行增幅反应加成</p>
-	<p> 对于生命C也可以在攻击栏中填入生命值和生命白值来计算词条收益</p>
-	<p>计算特定属性10个词条的收益带来实际提升的曲线</p>
+	<p> 元素精通的收益依赖于增幅系数和反应率，增幅系数为1.5或2，反应率指未进行增幅反应造成的伤害中，有多少伤害可以进行增幅反应加成</p>
+	<p> 对于生命C也可以在攻击栏中填入总生命值和生命白值来计算词条收益</p>
+	<p>计算增加特定属性10个词条带来实际提升的曲线</p>    
+	<form>
+        <label>
+		<input type="radio" name="option" value="option1" onchange="UpdateChart()" checked>相较于上一状态的提升 &nbsp  
+        </label>
+        <label>
+            <input type="radio" name="option" value="option2" onchange="UpdateChart()">相较于初始状态的提升
+        </label>
+    </form>
     <div class="chart-container">
         <h2>词条收益曲线</h2>
         <canvas id="myChart"></canvas>
@@ -198,7 +208,7 @@
             var jt = parseFloat(document.querySelector('input[name="num6"]').value);
             var zf = parseFloat(document.querySelector('input[name="num7"]').value);
             var fy = parseFloat(document.querySelector('input[name="num8"]').value);
-            
+			
             var res = [];
             for (var i = 0; i < 5; i++) {
                 res.push([]);
@@ -214,11 +224,18 @@
                     res[i].push(sh);
                     ct[i]++;
                 }
-                var temp = res[i];
+				const selectedOption = document.querySelector('input[name="option"]:checked');
+				var resi = res[i];
+				var base = res[i][0];
                 for (var j = 0; j < 10; j++) 
-                    temp[j] = ((temp[j+1] / temp[j] - 1)*100).toFixed(2);
-                temp.pop();
-                res[i] = temp;
+				{
+					if (selectedOption.value == "option1") 
+						resi[j] = ((resi[j+1] / resi[j] - 1)*100).toFixed(2);
+					else
+						resi[j] = ((resi[j+1] / base - 1)*100).toFixed(2);
+				}
+                resi.pop();
+                res[i] = resi;
             }
 
             // 扩展图表的数据集，设置为10个数据集
