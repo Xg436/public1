@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +15,7 @@
 
         html, body {
             height: 100%;
-            overflow: hidden;
+            overflow: auto;
         }
 
         body {
@@ -54,11 +53,13 @@
             box-sizing: border-box;
         }       
 		canvas {
-            width: 100% ;  /* 让图表宽度自适应 */
-            height: 100%;  /* 高度占据剩余空间 */
         }
         .chart-container {
 			height:40%;
+			margin-bottom:10%;
+        }
+        .highlight {
+            background-color: #f0f0f0;
         }
     </style>
 </head>
@@ -108,6 +109,8 @@
         <h2>词条收益曲线</h2>
         <canvas id="myChart"></canvas>
     </div>
+	
+    <table id="data-table"></table>
     <script>
         function getTooltipInfo(tooltipItem) {
             // 获取当前 tooltip 对应的横坐标（索引）
@@ -155,7 +158,7 @@
                             usePointStyle: true,  // 使用点样式而非默认矩形框
                             pointStyle: 'rect', // 设置图例为实心圆
                             font: {
-                                size: 14 // 设置图例字体大小
+                                size: 12 // 设置图例字体大小
                             },
                             color: '#000' // 设置图例字体颜色
                         }
@@ -209,9 +212,11 @@
             var zf = parseFloat(document.querySelector('input[name="num7"]').value);
             var fy = parseFloat(document.querySelector('input[name="num8"]').value);
 			
+			var data = [];
             var res = [];
             for (var i = 0; i < 5; i++) {
                 res.push([]);
+				data.push([]);
                 var ct = [0, 0, 0, 0, 0]; 
                 for (var j = 0; j < 11; j++) {
                     var bj1 = bj + 3.3 * ct[1];
@@ -222,6 +227,7 @@
                     var jt3 = zf * (1 + jt2) * fy + 1 - fy;
                     var sh = (gj + 0.05 * bz * ct[0]) * (1 + bj1 * (bs + 6.6 * ct[2]) / 10000) * (1 + zs / 100 + 0.05 * ct[3]) * jt3;
                     res[i].push(sh);
+                    data[i].push(sh.toFixed(0));
                     ct[i]++;
                 }
 				const selectedOption = document.querySelector('input[name="option"]:checked');
@@ -252,6 +258,43 @@
                     tension: 0.1
                 });
             }
+			var rowHeaders = labels;
+			var colHeaders =  Array.from({ length: 11 }, (_, i) => i);
+			const table = document.getElementById('data-table');
+			table.innerHTML = ''; 
+			table.innerHTML = ''; 
+			let headerRow = table.insertRow();
+			// 插入空格，以便左上角留空
+			headerRow.insertCell();
+			for (let i = 0; i < colHeaders.length; i++) {
+				let headerCell = headerRow.insertCell();
+				headerCell.textContent = colHeaders[i];
+				headerCell.style.fontWeight = 'bold'; 
+			}
+	
+			// 创建表格行和列
+			for (let i = 0; i < data.length; i++) {
+				let row = table.insertRow();  // 插入新行
+				
+				// 插入行表头（a, b, c, d, e）
+				let rowHeaderCell = row.insertCell();
+				rowHeaderCell.textContent = rowHeaders[i];
+				rowHeaderCell.style.fontWeight = 'bold';  // 设置行表头字体加粗
+				for (let j = 0; j < data[i].length; j++) 
+				{
+					let cell = row.insertCell();  // 插入新单元格
+					cell.textContent = data[i][j];  // 设置单元格的内容
+				}
+		
+				// 为每一行添加鼠标事件，悬停时高亮显示当前行
+				row.addEventListener('mouseenter', function() {
+					row.classList.add('highlight');  // 添加高亮类
+				});
+		
+				row.addEventListener('mouseleave', function() {
+					row.classList.remove('highlight');  // 移除高亮类
+				});
+			}
 
             // 更新图表
             myChart.update();
