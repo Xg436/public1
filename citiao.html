@@ -1,4 +1,6 @@
 
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,7 +43,7 @@
         th, td {
             padding: 10px;
             text-align: center;
-            height: 50px;
+            height: 40px;
             white-space: nowrap;  /* 防止文字换行 */
         }
 
@@ -56,7 +58,7 @@
         }
         .chart-container {
 			height:40%;
-			margin-bottom:10%;
+			margin-bottom:40px;
         }
         .highlight {
             background-color: #f0f0f0;
@@ -92,17 +94,24 @@
             <td>反应率</td>
             <td><input type="number" name="num8" min="0" value="0.8"></td>
         </tr>
+        <tr>
+            <td>初始抗性</td>
+            <td><input type="number" name="num9" value="10"></td>
+            <td>词条数</td>
+            <td><input type="number" name="num10" min="0" value="10"></td>
+        </tr>
     </table>
 
 	<p> 元素精通的收益依赖于增幅系数和反应率，增幅系数为1.5或2，反应率指未进行增幅反应造成的伤害中，有多少伤害可以进行增幅反应加成</p>
+	<p> 设定一个减抗词条减少5%的抗性</p>
 	<p> 对于生命C也可以在攻击栏中填入总生命值和生命白值来计算词条收益</p>
-	<p>计算增加特定属性10个词条带来实际提升的曲线</p>    
+	<p>计算增加给定的词条后实际提升伤害数值的曲线，点击图例可以隐藏掉对应曲线</p>    
 	<form>
         <label>
-		<input type="radio" name="option" value="option1" onchange="UpdateChart()" checked>相较于上一状态的提升 &nbsp  
+            <input type="radio" name="option" value="option1" onchange="UpdateChart()" checked>相较于初始状态的提升
         </label>
         <label>
-            <input type="radio" name="option" value="option2" onchange="UpdateChart()">相较于初始状态的提升
+			<input type="radio" name="option" value="option2" onchange="UpdateChart()">相较于上一状态的提升 &nbsp  
         </label>
     </form>
     <div class="chart-container">
@@ -110,33 +119,43 @@
         <canvas id="myChart"></canvas>
     </div>
 	
-    <table id="data-table"></table>
+    <div>
+		<table id="data-table"></table>
+    </div>
     <script>
         function getTooltipInfo(tooltipItem) {
-            // 获取当前 tooltip 对应的横坐标（索引）
             var index = tooltipItem.dataIndex;
-
-            // 获取所有数据集中该索引对应的数据点
-            var allDataPoints = tooltipItem.chart.data.datasets.map(function (dataset, i) {
+            var allData = tooltipItem.chart.data.datasets
+			.map(function (dataset, i) {
                 return {
+					idx: i,
+					vis: tooltipItem.chart.isDatasetVisible(i),
                     label: dataset.label,
                     value: dataset.data[index],
                     color: dataset.borderColor
                 };
             });
-
             // 按值从大到小排序
-            allDataPoints.sort(function (a, b) {
-                return b.value - a.value;
+            allData.sort(function (a, b) {
+				var va = a.vis;
+				var vb = b.vis;
+                return va == vb ?  b.value - a.value : vb - va;
             });
-            return allDataPoints[tooltipItem.datasetIndex];
+			let len = allData.length;
+			for (var j = 0; j < len; j++) {
+				if (tooltipItem.chart.isDatasetVisible(j) === false) { 
+					let lastElement = allData.pop();
+					allData.splice(j, 0, lastElement);
+					len--;
+				}
+			}
+            return allData[tooltipItem.datasetIndex];
         }
 
         var ctx = document.getElementById('myChart').getContext('2d');
         var myChart = new Chart(ctx, {
             type: 'line',  // 折线图
             data: {
-                labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'], // 横轴的标签
                 datasets: [] // 初始数据集为空
             },
             options: {
@@ -154,11 +173,12 @@
                 },
                 plugins: {
                     legend: {
+                        display: true,
                         labels: {
                             usePointStyle: true,  // 使用点样式而非默认矩形框
                             pointStyle: 'rect', // 设置图例为实心圆
                             font: {
-                                size: 12 // 设置图例字体大小
+                                size: 16 // 设置图例字体大小
                             },
                             color: '#000' // 设置图例字体颜色
                         }
@@ -211,55 +231,59 @@
             var jt = parseFloat(document.querySelector('input[name="num6"]').value);
             var zf = parseFloat(document.querySelector('input[name="num7"]').value);
             var fy = parseFloat(document.querySelector('input[name="num8"]').value);
+            var kx = parseFloat(document.querySelector('input[name="num9"]').value);
+            var xCount = parseFloat(document.querySelector('input[name="num10"]').value);
 			
-			var data = [];
-            var res = [];
-            for (var i = 0; i < 5; i++) {
-                res.push([]);
-				data.push([]);
-                var ct = [0, 0, 0, 0, 0]; 
-                for (var j = 0; j < 11; j++) {
+			var tableData = [];
+            var chartData = [];
+            for (var i = 0; i < 6; i++) {
+                chartData.push([]);
+				tableData.push([]);
+                var ct = [0, 0, 0, 0, 0, 0]; 
+                for (var j = 0; j < xCount + 1; j++) {
                     var bj1 = bj + 3.3 * ct[1];
                     if (bj1 > 100)
                         bj1 = 100;
+					var bj2 = (1 + bj1 * (bs + 6.6 * ct[2]) / 10000);
                     var jt1 = jt + 20 * ct[4];
                     var jt2 = 2.78 * jt1 / (1400 + jt1);
                     var jt3 = zf * (1 + jt2) * fy + 1 - fy;
-                    var sh = (gj + 0.05 * bz * ct[0]) * (1 + bj1 * (bs + 6.6 * ct[2]) / 10000) * (1 + zs / 100 + 0.05 * ct[3]) * jt3;
-                    res[i].push(sh);
-                    data[i].push(sh.toFixed(0));
+					var k1 = (kx - ct[5] * 5) / 100;
+					var k2 = k1 > 0.75 ? 1 / (1 + k1 * 4) : (k1 > 0 ? 1 - k1 : 1 - k1 / 2);
+                    var sh = (gj + 0.05 * bz * ct[0]) * bj2 * (1 + zs / 100 + 0.05 * ct[3]) * jt3 * k2;
+                    chartData[i].push(sh);
+                    tableData[i].push(sh.toFixed(0));
                     ct[i]++;
                 }
 				const selectedOption = document.querySelector('input[name="option"]:checked');
-				var resi = res[i];
-				var base = res[i][0];
-                for (var j = 0; j < 10; j++) 
+				var rowi = chartData[i];
+                for (var j = 0; j < xCount; j++) 
 				{
-					if (selectedOption.value == "option1") 
-						resi[j] = ((resi[j+1] / resi[j] - 1)*100).toFixed(2);
+					if (selectedOption.value == "option2") 
+						rowi[j] = ((rowi[j+1] / rowi[j] - 1)*100).toFixed(2);
 					else
-						resi[j] = ((resi[j+1] / base - 1)*100).toFixed(2);
+						rowi[j] = ((rowi[j+1] / tableData[i][0] - 1)*100).toFixed(2);
 				}
-                resi.pop();
-                res[i] = resi;
+                rowi.pop();
+                chartData[i] = rowi;
             }
 
             // 扩展图表的数据集，设置为10个数据集
+            myChart.data.labels = Array.from({ length: xCount }, (_, i) => 1 + i); // 横轴的标签
             myChart.data.datasets = []; // 清空现有数据集    
-            var labels = ['攻击力', '暴击率', '暴击伤害', '伤害加成', '元素精通'];
-            var colors = ['#00FF00', '#FFD500', '#FF0000', '#0000FF', '#F000F0'];
-            for (var i = 0; i < 5; i++) {
+            var rowHeaders = ['攻击力', '暴击率', '暴击伤害', '伤害加成', '元素精通', '减抗'];
+            var colors = ['#FF2B3C', '#FFD306','#FF9224', '#038FFF', '#EE00EE','#00EF80'];
+            for (var i = 0; i < 6; i++) {
                 myChart.data.datasets.push({
-                    label: labels[i],
-                    data: res[i],
+                    label: rowHeaders[i],
+                    data: chartData[i],
                     borderColor: colors[i], 
                     backgroundColor: colors[i],
                     fill: false,
                     tension: 0.1
                 });
             }
-			var rowHeaders = labels;
-			var colHeaders =  Array.from({ length: 11 }, (_, i) => i);
+			var colHeaders =  Array.from({ length: xCount + 1 }, (_, i) => i);
 			const table = document.getElementById('data-table');
 			table.innerHTML = ''; 
 			table.innerHTML = ''; 
@@ -273,17 +297,18 @@
 			}
 	
 			// 创建表格行和列
-			for (let i = 0; i < data.length; i++) {
+			for (let i = 0; i < tableData.length; i++) {
 				let row = table.insertRow();  // 插入新行
+				row.style.color = colors[i];
 				
 				// 插入行表头（a, b, c, d, e）
 				let rowHeaderCell = row.insertCell();
 				rowHeaderCell.textContent = rowHeaders[i];
 				rowHeaderCell.style.fontWeight = 'bold';  // 设置行表头字体加粗
-				for (let j = 0; j < data[i].length; j++) 
+				for (let j = 0; j < tableData[i].length; j++) 
 				{
 					let cell = row.insertCell();  // 插入新单元格
-					cell.textContent = data[i][j];  // 设置单元格的内容
+					cell.textContent = tableData[i][j];  // 设置单元格的内容
 				}
 		
 				// 为每一行添加鼠标事件，悬停时高亮显示当前行
@@ -302,10 +327,12 @@
 
         // 调用UpdateChart初始化图表
         UpdateChart();
-
+		
         // 为每个输入框添加事件监听
         document.querySelectorAll('input[type="number"]').forEach(function(input) {
             input.addEventListener('input', UpdateChart);
         });
+		
+		//myChart.data.datasets[5].hidden = true;
     </script>
 
