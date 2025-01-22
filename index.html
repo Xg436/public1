@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>欧非计算器</title>
+        <title>抽卡概率计算器</title>
         <style>
             body {
                 font-family: Arial, sans-serif;
@@ -76,78 +77,103 @@
         <div class="container">
             <h1>抽卡概率计算器</h1>
             <form>
-                <label for="num">输入抽数（不能被平均抽数整除的话会去掉余数）:</label>
-                <input type="number" id="num" name="num" placeholder="请输入抽数" min="1" max="10000" required>
-                <label for="avg">输入每个up的平均抽数:</label>
-                <input type="number" id="avg" name="avg" placeholder="输入每个up的平均抽数" min="1" max="180" required>
+                <label for="num">输入抽数</label>
+                <input type="number" id="num" min="1" max="100000" required>
+                <label for="avg">输入up个数</label>
+                <input type="number" id="num2"required>
+                <label >输入捕获明光初始值</label>
+                <input type="number" id="buhuo"  min="0" max="3" value='0' required>
                 <button type="submit">计算欧非</button>
             </form>
             <div>
                 <p/>
-                <span id="result1"></span>
+                <span id="result1">非酋度：模拟同样次数的抽卡，计算你的每up平均值比多少人更多</span>
                 <p/>
-                <span id="result2">非酋度：模拟同样次数的抽卡，计算你的up平均比多少人更多</span>
+                <span id="result2">也可以理解为你有这么多的抽数，有多大概率可以抽出想要的up数</span>
             </div>
         </div>
         <script>
-            function oneUp() {
-                count = total = 1;
-                wai = 0;
+			var jishu1 = 0;
+            function one5() {
+				let count = 1;
                 while (true) {
                     p = count <= 73 ? 0.006 : (0.006 + 0.06 * (count - 73));
-                    if (Math.random() < p) {
-                        if (wai || Math.random() < 0.5)
-                            return total;
-                        else
-                            count = wai = 1;
-                    }
-                    total++;
-                    count++;
+                    if (Math.random() < p)
+						return count;
+					count++;
                 }
             }
+            function oneUp(){
+				let pwai = [0.5,0.5,0.73,1];
+				let a = one5();
+				if(Math.random() < pwai[jishu1])
+				{
+					jishu1 = 0;
+					return a;
+				}
+				else
+				{
+					jishu1++;
+					return a + one5();
+				}
+			}
 
             const form = document.querySelector('form');
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
 
                 num = document.getElementById('num').value;
-                avg = document.getElementById('avg').value;
-                num = Math.floor(num / avg) * avg;
+				up = document.getElementById('num2').value;
+                avg = num / up;
+				jishu0 = document.getElementById('buhuo').value;
                 manCount = 10000000 / num;
-                let allData = [];
-                let avgs = [];
+                let allNum = [];
                 while (manCount-- > 0) {
-                    n = 0;
-                    let temp = [];
-                    while (n < num) {
-                        once = oneUp();
-                        n += once;
-                        temp.push(once);
+					jishu1 = jishu0;
+                    num1 = 0;
+                    up1 = 0;
+                    while (up1 < up) {
+                        num1 += oneUp();
+						up1++;
+						if(num1 > num)
+							break;
                     }
-                    avgs.push(n / temp.length);
-                    allData.push(temp);
+                    allNum.push(num1);
                 }
                 fei = 0;
-                avgs.forEach((item)=>{
-                    if (item <= avg)
+                allNum.forEach((item)=>{
+                    if (num >= item)
                         fei++;
                 }
                 );
                 let res1 = document.getElementById("result1");
-                f1 = fei / avgs.length;
+                f1 = fei / allNum.length;
                 res1.innerHTML = "你的非酋度为:" + f1.toFixed(3);
                 if (f1 == 1)
                     f1 = 0.999;
                 if (f1 == 0)
                     f1 = 0.001;
                 let res2 = document.getElementById("result2");
-                res = "展示所有抽卡结果<p />";
-                allData.forEach((item)=>{
-                    res += item + "<p />";
-                }
-                );
-                //res2.innerHTML = res;
-
+				if(0)//验证捕获明光概率表
+				{
+					var wai = 0;
+					var bw = 0;
+					jishu1 = 0;
+					for(var i = 0;i < 100000;i++)
+					{
+						var bhmg = [0.5,0.5,0.73,1];
+						if(Math.random() < bhmg[jishu1++])
+						{
+							bw++;
+							jishu1 = 0;
+						}
+						else
+						{
+							wai++;
+						}
+					}
+					res2.innerHTML = bw / (bw + wai);
+				}
             });
         </script>
     </body>
