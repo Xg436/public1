@@ -325,8 +325,6 @@
                 if (heroes.length === 0) return;
                 if (heroes.length === 1) {
                     const hero = heroes[0];
-                    jumpHeroName.textContent = hero.name;
-                    autoJumpNotice.style.display = 'block';
                     setTimeout(() => {
                         window.location.href = hero.link;
                     }, 1500);
