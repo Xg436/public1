@@ -226,7 +226,7 @@
 <body>
     <header>
         <h1>DOTA2 英雄搜索工具</h1>
-        <p class="subtitle">输入英雄名称搜索并跳转到官方英雄页面。实时读取本地HTML文件内容，无缓存。</p>
+        <p class="subtitle">输入英雄名称搜索并跳转到官方英雄页面。</p>
     </header>
     
     <div class="search-container">
@@ -251,10 +251,9 @@
     <div class="instructions">
         <h2>使用说明</h2>
         <ul>
-            <li>此工具需要与"英雄 Heroes - 《DOTA2》官方网站.html"文件在同一目录下</li>
             <li>在输入框中输入英雄名称（中文）的全部或部分</li>
             <li>点击搜索结果将直接跳转到该英雄的官方页面</li>
-            <li>每次搜索都会实时读取本地HTML文件，确保获取最新数据</li>
+            <li>如果搜索结果只有一个则直接跳转</li>
             <li>支持模糊搜索（如输入"刺客"可找到所有包含"刺客"的英雄）</li>
         </ul>
     </div>
@@ -324,7 +323,15 @@
                 
                 const heroes = await loadHeroData();
                 if (heroes.length === 0) return;
-                
+                if (heroes.length === 1) {
+                    const hero = heroes[0];
+                    jumpHeroName.textContent = hero.name;
+                    autoJumpNotice.style.display = 'block';
+                    setTimeout(() => {
+                        window.location.href = hero.link;
+                    }, 1500);
+                    return;
+                }
                 // 过滤匹配的英雄
                 const matchedHeroes = heroes.filter(hero => 
                     hero.name.toLowerCase().includes(searchTerm)
