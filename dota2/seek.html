@@ -323,18 +323,19 @@
                 
                 const heroes = await loadHeroData();
                 if (heroes.length === 0) return;
-                if (heroes.length === 1) {
-                    const hero = heroes[0];
-                    setTimeout(() => {
-                        window.location.href = hero.link;
-                    }, 1500);
-                    return;
-                }
                 // 过滤匹配的英雄
                 const matchedHeroes = heroes.filter(hero => 
                     hero.name.toLowerCase().includes(searchTerm)
                 );
-                
+                if (matchedHeroes.length === 1) {
+                    showStatus(`找到唯一匹配英雄: ${matchedHeroes[0].name}，正在跳转...`, 'success');
+                    
+                    // 添加短暂延迟让用户看到消息
+                    setTimeout(() => {
+                        window.location.href = matchedHeroes[0].link;
+                    }, 1200);
+                    return;
+                }
                 displayResults(matchedHeroes);
             }
             
