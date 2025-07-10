@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOTA2英雄搜索工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1f2d 0%, #0d1117 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #e0e0e0;
+        }
+        
+        header {
+            text-align: center;
+            margin: 20px 0 40px;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #e65c00, #f9d423);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a0aec0;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .search-container {
+            background: rgba(30, 35, 48, 0.7);
+            border-radius: 12px;
+            padding: 30px;
+            width: 100%;
+            max-width: 700px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        #heroSearch {
+            flex: 1;
+            padding: 16px 20px;
+            font-size: 1.1rem;
+            background: rgba(20, 25, 35, 0.8);
+            border: 2px solid #2d3748;
+            border-radius: 8px;
+            color: #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        #heroSearch:focus {
+            outline: none;
+            border-color: #e65c00;
+            box-shadow: 0 0 0 3px rgba(230, 92, 0, 0.3);
+        }
+        
+        #heroSearch::placeholder {
+            color: #718096;
+        }
+        
+        button {
+            padding: 16px 30px;
+            background: linear-gradient(90deg, #e65c00, #f9a423);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            background: linear-gradient(90deg, #f9a423, #e65c00);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .results-container {
+            background: rgba(20, 25, 35, 0.8);
+            border-radius: 8px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .hero-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .hero-item {
+            background: rgba(30, 35, 48, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .hero-item:hover {
+            background: rgba(40, 45, 58, 0.9);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border-color: rgba(230, 92, 0, 0.3);
+        }
+        
+        .hero-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            background-color: #2d3748;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #f9a423;
+        }
+        
+        .hero-name {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        
+        .instructions {
+            background: rgba(30, 35, 48, 0.7);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+            width: 100%;
+            max-width: 700px;
+        }
+        
+        .instructions h2 {
+            margin-bottom: 15px;
+            color: #f9a423;
+        }
+        
+        .instructions ul {
+            padding-left: 25px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .success {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid rgba(46, 204, 113, 0.5);
+            color: #2ecc71;
+        }
+        
+        .error {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid rgba(231, 76, 60, 0.5);
+            color: #e74c3c;
+        }
+        
+        .loading {
+            color: #f9a423;
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        @media (max-width: 600px) {
+            .search-box {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .hero-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>DOTA2 英雄搜索工具</h1>
+        <p class="subtitle">输入英雄名称搜索并跳转到官方英雄页面。实时读取本地HTML文件内容，无缓存。</p>
+    </header>
+    
+    <div class="search-container">
+        <div class="search-box">
+            <input type="text" id="heroSearch" placeholder="输入英雄名称（如：幻影刺客、斧王）">
+            <button id="searchButton">搜索英雄</button>
+        </div>
+        
+        <div class="loading" id="loadingIndicator">
+            正在读取英雄数据...
+        </div>
+        
+        <div class="status" id="statusMessage"></div>
+        
+        <div class="results-container">
+            <div class="hero-list" id="heroResults">
+                <!-- 搜索结果将在这里显示 -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="instructions">
+        <h2>使用说明</h2>
+        <ul>
+            <li>此工具需要与"英雄 Heroes - 《DOTA2》官方网站.html"文件在同一目录下</li>
+            <li>在输入框中输入英雄名称（中文）的全部或部分</li>
+            <li>点击搜索结果将直接跳转到该英雄的官方页面</li>
+            <li>每次搜索都会实时读取本地HTML文件，确保获取最新数据</li>
+            <li>支持模糊搜索（如输入"刺客"可找到所有包含"刺客"的英雄）</li>
+        </ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('heroSearch');
+            const searchButton = document.getElementById('searchButton');
+            const heroResults = document.getElementById('heroResults');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const statusMessage = document.getElementById('statusMessage');
+            
+            // 从本地HTML文件加载英雄数据
+            async function loadHeroData() {
+                loadingIndicator.style.display = 'block';
+                statusMessage.style.display = 'none';
+                heroResults.innerHTML = '';
+                
+                try {
+                    // 获取本地HTML文件
+                    const response = await fetch('heros.html');
+                    if (!response.ok) {
+                        throw new Error('无法读取英雄数据文件');
+                    }
+                    
+                    const htmlContent = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlContent, 'text/html');
+                    
+                    // 提取所有英雄元素
+                    const heroElements = doc.querySelectorAll('.HeroIcon.item');
+                    
+                    if (heroElements.length === 0) {
+                        throw new Error('未找到英雄数据');
+                    }
+                    
+                    const heroes = [];
+                    
+                    heroElements.forEach(heroElement => {
+                        const link = heroElement.getAttribute('href');
+                        const nameElement = heroElement.querySelector('.HeroName');
+                        
+                        if (link && nameElement) {
+                            const name = nameElement.textContent.trim();
+                            heroes.push({ name, link });
+                        }
+                    });
+                    
+                    loadingIndicator.style.display = 'none';
+                    return heroes;
+                } catch (error) {
+                    console.error('加载英雄数据失败:', error);
+                    loadingIndicator.style.display = 'none';
+                    showStatus(`错误: ${error.message}`, 'error');
+                    return [];
+                }
+            }
+            
+            // 搜索英雄
+            async function searchHeroes() {
+                const searchTerm = searchInput.value.trim().toLowerCase();
+                
+                if (!searchTerm) {
+                    showStatus('请输入英雄名称', 'error');
+                    return;
+                }
+                
+                const heroes = await loadHeroData();
+                if (heroes.length === 0) return;
+                
+                // 过滤匹配的英雄
+                const matchedHeroes = heroes.filter(hero => 
+                    hero.name.toLowerCase().includes(searchTerm)
+                );
+                
+                displayResults(matchedHeroes);
+            }
+            
+            // 显示搜索结果
+            function displayResults(heroes) {
+                heroResults.innerHTML = '';
+                
+                if (heroes.length === 0) {
+                    showStatus('未找到匹配的英雄', 'error');
+                    return;
+                }
+                
+                showStatus(`找到 ${heroes.length} 个匹配的英雄`, 'success');
+                
+                heroes.forEach(hero => {
+                    const heroItem = document.createElement('div');
+                    heroItem.className = 'hero-item';
+                    heroItem.innerHTML = `
+                        <div class="hero-icon">${hero.name.charAt(0)}</div>
+                        <div class="hero-name">${hero.name}</div>
+                    `;
+                    
+                    heroItem.addEventListener('click', () => {
+                        window.location.href = hero.link;
+                    });
+                    
+                    heroResults.appendChild(heroItem);
+                });
+            }
+            
+            // 显示状态消息
+            function showStatus(message, type) {
+                statusMessage.textContent = message;
+                statusMessage.className = `status ${type}`;
+                statusMessage.style.display = 'block';
+            }
+            
+            // 事件监听
+            searchButton.addEventListener('click', searchHeroes);
+            
+            searchInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') {
+                    searchHeroes();
+                }
+            });
+            
+            // 初始加载时显示提示
+            showStatus('输入英雄名称开始搜索', 'success');
+        });
+    </script>
+</body>
+</html>
